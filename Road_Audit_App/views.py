@@ -12,41 +12,91 @@ from django.shortcuts import render, redirect
 from .models import RoadAudit
 
 
-# --------------------------------------------------
-# AI MODEL CONFIGURATION
-# --------------------------------------------------
+# ==========================================
+# 1. AI MODEL CONFIGURATION
+# ==========================================
 
 MODEL_PATH = settings.BASE_DIR / "best.pt"
 
 model = YOLO(str(MODEL_PATH))
 
-COST_PER_DETECTED_OBJECT = 1000
+
+# ==========================================
+# 2. DEMO REPAIR COST CONFIGURATION
+# ==========================================
+
+SMALL_POTHOLE_COST = 500
+MEDIUM_POTHOLE_COST = 1500
+LARGE_POTHOLE_COST = 3000
+
+SMALL_AREA_PERCENT = 1.0
+MEDIUM_AREA_PERCENT = 5.0
 
 
-# --------------------------------------------------
-# DASHBOARD STATISTICS
-# --------------------------------------------------
+# ==========================================
+# 3. CALCULATE POTHOLE REPAIR COST
+# ==========================================
+
+def calculate_pothole_cost(
+    x1,
+    y1,
+    x2,
+    y2,
+    image_width,
+    image_height,
+):
+    """
+    Calculate an illustrative repair cost using
+    bounding-box area as a percentage of image area.
+
+    These values are demonstration estimates only.
+    """
+
+    box_width = max(0, x2 - x1)
+    box_height = max(0, y2 - y1)
+
+    image_area = image_width * image_height
+
+    if image_area <= 0:
+        return SMALL_POTHOLE_COST
+
+    box_area_percent = (
+        (box_width * box_height) / image_area
+    ) * 100
+
+    if box_area_percent < SMALL_AREA_PERCENT:
+        return SMALL_POTHOLE_COST
+
+    elif box_area_percent < MEDIUM_AREA_PERCENT:
+        return MEDIUM_POTHOLE_COST
+
+    else:
+        return LARGE_POTHOLE_COST
+
+
+# ==========================================
+# 4. DASHBOARD STATISTICS
+# ==========================================
 
 def get_dashboard_statistics():
+    """
+    Return summary statistics for the dashboard.
+    """
 
-    # Total road audits
     total_scans = RoadAudit.objects.count()
 
-    # Total detected objects across all audits
     total_detected_objects = (
         RoadAudit.objects.aggregate(
             total=Sum("detection_count")
         )["total"] or 0
     )
 
-    # Total estimated repair cost
     total_repair_cost = (
         RoadAudit.objects.aggregate(
             total=Sum("estimated_cost")
         )["total"] or 0
     )
 
-    # Latest five road audits
     recent_audits = RoadAudit.objects.order_by(
         "-uploaded_at"
     )[:5]
@@ -59,15 +109,14 @@ def get_dashboard_statistics():
     }
 
 
-# --------------------------------------------------
-# HOME / IMAGE UPLOAD / AI DETECTION
-# --------------------------------------------------
+# ==========================================
+# 5. HOME PAGE AND IMAGE UPLOAD
+# ==========================================
 
 def home(request):
 
-    # Display dashboard
+    # Display dashboard on GET request
     if request.method == "GET":
-
         context = get_dashboard_statistics()
 
         return render(
@@ -76,7 +125,11 @@ def home(request):
             context,
         )
 
-    # Get uploaded image
+    # Accept POST requests only for image upload
+    if request.method != "POST":
+        return redirect("home")
+
+    # Get uploaded road image
     image = request.FILES.get("road_image")
 
     if not image:
@@ -87,7 +140,7 @@ def home(request):
 
         return redirect("home")
 
-    # Validate image size: maximum 5 MB
+    # Validate maximum upload size: 5 MB
     if image.size > 5 * 1024 * 1024:
         messages.error(
             request,
@@ -96,7 +149,7 @@ def home(request):
 
         return redirect("home")
 
-    # Validate image format/content
+    # Validate image content
     try:
         with Image.open(image) as uploaded_image:
             uploaded_image.verify()
@@ -110,22 +163,21 @@ def home(request):
     ):
         messages.error(
             request,
-            "Invalid image. Please select a valid image.",
+            "Invalid image. Please upload a valid image.",
         )
 
         return redirect("home")
 
-    # Save uploaded image in the database
+    # Create an audit record and save uploaded image
     audit = RoadAudit.objects.create(
         road_image=image,
     )
 
     try:
-
-        # Get the uploaded image path
+        # Get uploaded image path
         image_path = Path(audit.road_image.path)
 
-        # Run YOLO object detection
+        # Run YOLOv8 object detection
         results = model.predict(
             source=str(image_path),
             conf=0.25,
@@ -137,19 +189,24 @@ def home(request):
                 "The AI model returned no results."
             )
 
-        # Store detection details
+        # Get original image dimensions
+        image_height, image_width = results[0].orig_shape
+
+        # Prepare detection information
         detections = []
 
+        # Process all detections
         for result in results:
-
             for box in result.boxes:
 
+                # Get detected class
                 class_id = int(box.cls[0])
-
                 class_name = model.names[class_id]
 
+                # Get confidence score
                 confidence = float(box.conf[0])
 
+                # Get bounding-box coordinates
                 coordinates = box.xyxy[0].tolist()
 
                 x1, y1, x2, y2 = [
@@ -157,6 +214,34 @@ def home(request):
                     for value in coordinates
                 ]
 
+                # Calculate bounding-box dimensions
+                box_width = round(
+                    max(0, x2 - x1),
+                    2,
+                )
+
+                box_height = round(
+                    max(0, y2 - y1),
+                    2,
+                )
+
+                # Calculate bounding-box area
+                box_area = round(
+                    box_width * box_height,
+                    2,
+                )
+
+                # Estimate repair cost
+                pothole_cost = calculate_pothole_cost(
+                    x1,
+                    y1,
+                    x2,
+                    y2,
+                    image_width,
+                    image_height,
+                )
+
+                # Store detection details
                 detections.append({
                     "class_name": class_name,
                     "confidence": round(
@@ -167,12 +252,16 @@ def home(request):
                     "y1": y1,
                     "x2": x2,
                     "y2": y2,
+                    "box_width": box_width,
+                    "box_height": box_height,
+                    "box_area": box_area,
+                    "estimated_cost": pothole_cost,
                 })
 
-        # Generate image with detection boxes
+        # Generate annotated image with bounding boxes
         annotated_image = results[0].plot()
 
-        # Create output directory
+        # Create detection-results folder
         output_folder = (
             Path(settings.MEDIA_ROOT)
             / "detection_results"
@@ -183,34 +272,34 @@ def home(request):
             exist_ok=True,
         )
 
-        # Save annotated image
-        output_filename = (
-            f"audit_{audit.id}_result.jpg"
-        )
+        # Define output image filename
+        output_filename = f"audit_{audit.id}_result.jpg"
 
         output_path = output_folder / output_filename
 
-        if not cv2.imwrite(
+        # Save annotated image
+        image_saved = cv2.imwrite(
             str(output_path),
             annotated_image,
-        ):
+        )
+
+        if not image_saved:
             raise RuntimeError(
-                "Unable to save detection result image."
+                "Unable to save the detection result image."
             )
 
-        # Calculate detection count and estimated cost
+        # Calculate number of detected objects
         detection_count = len(detections)
 
-        estimated_cost = (
-            detection_count
-            * COST_PER_DETECTED_OBJECT
+        # Calculate total estimated repair cost
+        estimated_cost = sum(
+            item["estimated_cost"]
+            for item in detections
         )
 
         # Update audit record
         audit.detection_count = detection_count
-
         audit.estimated_cost = estimated_cost
-
         audit.detections = detections
 
         audit.save(
@@ -247,8 +336,7 @@ def home(request):
         )
 
     except Exception as error:
-
-        # Print the actual error in the terminal
+        # Print details for troubleshooting
         print(
             "AI Detection Error:",
             error,
@@ -260,7 +348,7 @@ def home(request):
             "Check the terminal for details.",
         )
 
-        # Display dashboard even if detection fails
+        # Keep dashboard available if detection fails
         context = get_dashboard_statistics()
 
         context.update({

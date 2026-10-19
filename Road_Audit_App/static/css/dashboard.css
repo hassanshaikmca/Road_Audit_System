@@ -1,4 +1,7 @@
-/* 1. Basic page settings */
+/* =====================================
+   1. BASIC PAGE SETTINGS
+===================================== */
+
 * {
     box-sizing: border-box;
 }
@@ -6,11 +9,15 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: aliceblue;
+    background-color: lightpink;
     color: black;
+    line-height: 1.6;
 }
 
-/* 2. Navigation bar */
+/* =====================================
+   2. NAVIGATION BAR
+===================================== */
+
 .navbar {
     background-color: darkblue;
     color: white;
@@ -23,42 +30,54 @@ body {
 
 .navbar h2 {
     margin: 0;
+    color: white;
 }
 
 .navbar span {
-    color: lightblue;
+    color: lightpink;
     font-size: 14px;
 }
 
-/* 3. Main container */
+/* =====================================
+   3. MAIN CONTAINER
+===================================== */
+
 .container {
     width: 90%;
     max-width: 1100px;
     margin: 35px auto;
 }
 
-/* 4. Welcome section */
+/* =====================================
+   4. WELCOME SECTION
+===================================== */
+
 .welcome {
     margin-bottom: 28px;
 }
 
 .eyebrow {
-    color: blue;
+    color: darkblue;
     font-size: 12px;
     font-weight: bold;
     letter-spacing: 2px;
 }
 
 .welcome h1 {
+    color: darkblue;
     font-size: 32px;
     margin-bottom: 10px;
 }
 
 .welcome p {
-    line-height: 1.6;
+    color: black;
+    line-height: 1.8;
 }
 
-/* 5. Summary cards */
+/* =====================================
+   5. DASHBOARD SUMMARY CARDS
+===================================== */
+
 .summary {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -71,6 +90,12 @@ body {
     border: 1px solid lightgray;
     border-radius: 12px;
     padding: 24px;
+    box-shadow: 0 4px 10px lightgray;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
 }
 
 .card p {
@@ -79,6 +104,7 @@ body {
 }
 
 .card h2 {
+    color: darkblue;
     font-size: 26px;
     margin-bottom: 0;
     overflow-wrap: anywhere;
@@ -90,23 +116,31 @@ body {
     color: gray;
 }
 
-/* 6. Upload section */
+/* =====================================
+   6. IMAGE UPLOAD SECTION
+===================================== */
+
 .upload-section {
     background-color: white;
     border: 1px solid lightgray;
     border-radius: 12px;
     padding: 24px;
+    box-shadow: 0 4px 10px lightgray;
 }
 
 .upload-section h2 {
+    color: darkblue;
     margin-top: 0;
 }
 
 .upload-section p {
-    color: gray;
+    color: black;
 }
 
-/* 7. Upload form */
+/* =====================================
+   7. UPLOAD FORM
+===================================== */
+
 #upload-form {
     display: grid;
     gap: 14px;
@@ -114,20 +148,30 @@ body {
 }
 
 #upload-form label {
+    color: darkblue;
     font-weight: bold;
 }
 
 input[type="file"] {
     width: 100%;
     padding: 14px;
-    border: 1px dashed gray;
+    border: 2px dashed darkblue;
     border-radius: 8px;
-    background-color: whitesmoke;
+    background-color: lightpink;
+    color: black;
 }
 
-/* 8. Upload button */
+input[type="file"]:focus-visible {
+    outline: 2px solid darkblue;
+    outline-offset: 3px;
+}
+
+/* =====================================
+   8. UPLOAD BUTTON
+===================================== */
+
 button {
-    background-color: blue;
+    background-color: darkblue;
     color: white;
     border: none;
     border-radius: 8px;
@@ -135,10 +179,11 @@ button {
     cursor: pointer;
     font-size: 15px;
     font-weight: bold;
+    transition: background-color 0.2s ease;
 }
 
 button:hover {
-    background-color: darkblue;
+    background-color: navy;
 }
 
 button:focus-visible {
@@ -146,21 +191,30 @@ button:focus-visible {
     outline-offset: 3px;
 }
 
-/* 9. Selected image preview */
+/* =====================================
+   9. SELECTED IMAGE PREVIEW
+===================================== */
+
 #preview-container img {
     display: block;
     max-width: 100%;
     max-height: 350px;
+    margin-top: 12px;
+    border: 1px solid lightgray;
     border-radius: 10px;
 }
 
-/* 10. AI detection result sections */
+/* =====================================
+   10. AI DETECTION RESULTS
+===================================== */
+
 .detection-results {
     background-color: white;
     margin-top: 28px;
     padding: 24px;
     border: 1px solid lightgray;
     border-radius: 12px;
+    box-shadow: 0 4px 10px lightgray;
 }
 
 .detection-results h2 {
@@ -168,7 +222,20 @@ button:focus-visible {
     margin-top: 0;
 }
 
-/* 11. Original image and bounding-box image */
+.detection-results h3 {
+    color: green;
+    font-size: 21px;
+    overflow-wrap: anywhere;
+}
+
+.detection-results strong {
+    color: darkblue;
+}
+
+/* =====================================
+   11. ORIGINAL AND DETECTED IMAGES
+===================================== */
+
 .result-image {
     display: block;
     width: 100%;
@@ -179,7 +246,10 @@ button:focus-visible {
     border-radius: 10px;
 }
 
-/* 12. Detection results table */
+/* =====================================
+   12. DETECTION DETAILS TABLE
+===================================== */
+
 .table-container {
     width: 100%;
     overflow-x: auto;
@@ -187,8 +257,10 @@ button:focus-visible {
 
 .detection-results table {
     width: 100%;
+    min-width: 600px;
     border-collapse: collapse;
     margin-top: 16px;
+    background-color: white;
 }
 
 .detection-results th,
@@ -199,25 +271,36 @@ button:focus-visible {
 }
 
 .detection-results th {
-    background-color: lightblue;
+    background-color: lightpink;
     color: darkblue;
+    font-weight: bold;
+}
+
+.detection-results td {
+    color: black;
 }
 
 .detection-results tbody tr:hover {
-    background-color: whitesmoke;
+    background-color: lavenderblush;
 }
 
-/* 13. Repair cost */
+/* =====================================
+   13. REPAIR COST INFORMATION
+===================================== */
+
 .detection-results h3 {
     color: green;
     overflow-wrap: anywhere;
 }
 
-.detection-results strong {
+.detection-results h3 strong {
     color: darkblue;
 }
 
-/* 14. Success and error messages */
+/* =====================================
+   14. SUCCESS AND ERROR MESSAGES
+===================================== */
+
 .messages {
     background-color: lightgreen;
     border: 1px solid green;
@@ -239,21 +322,38 @@ button:focus-visible {
     color: #805500;
 }
 
-/* 15. Upload status message */
+/* =====================================
+   15. UPLOAD STATUS MESSAGE
+===================================== */
+
 #status-message {
+    color: darkblue;
     overflow-wrap: anywhere;
 }
 
-/* 16. PDF report section */
+/* =====================================
+   16. PDF REPORT SECTION
+===================================== */
+
 .pdf-report-section {
+    background-color: white;
     margin-top: 28px;
+    padding: 24px;
+    border: 1px solid lightgray;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px lightgray;
+}
+
+.pdf-report-section h2 {
+    color: darkblue;
+    margin-top: 0;
 }
 
 .download-report-btn {
     display: inline-block;
     padding: 12px 22px;
     margin-top: 10px;
-    background-color: #176b45;
+    background-color: darkblue;
     color: white;
     text-decoration: none;
     text-align: center;
@@ -263,24 +363,40 @@ button:focus-visible {
 }
 
 .download-report-btn:hover {
-    background-color: #105235;
+    background-color: navy;
 }
 
 .download-report-btn:focus-visible {
-    outline: 2px solid #176b45;
+    outline: 2px solid darkblue;
     outline-offset: 3px;
 }
 
-/* 17. Footer */
+/* =====================================
+   17. FOOTER
+===================================== */
+
 .footer {
     text-align: center;
     padding: 20px;
     margin-top: 30px;
-    color: gray;
+    color: darkblue;
     font-size: 14px;
 }
 
-/* 18. Mobile responsive design */
+/* =====================================
+   18. TABLET RESPONSIVE DESIGN
+===================================== */
+
+@media (max-width: 900px) {
+    .summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* =====================================
+   19. MOBILE RESPONSIVE DESIGN
+===================================== */
+
 @media (max-width: 650px) {
 
     .navbar {
@@ -304,7 +420,8 @@ button:focus-visible {
 
     .card,
     .upload-section,
-    .detection-results {
+    .detection-results,
+    .pdf-report-section {
         padding: 18px;
     }
 
@@ -321,5 +438,24 @@ button:focus-visible {
     .download-report-btn {
         display: block;
         width: 100%;
+    }
+}
+
+/* =====================================
+   20. SMALL MOBILE SCREENS
+===================================== */
+
+@media (max-width: 380px) {
+
+    .welcome h1 {
+        font-size: 23px;
+    }
+
+    .card h2 {
+        font-size: 23px;
+    }
+
+    .navbar h2 {
+        font-size: 20px;
     }
 }
