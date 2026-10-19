@@ -2,7 +2,6 @@ from pathlib import Path
 
 import cv2
 from PIL import Image, UnidentifiedImageError
-from ultralytics import YOLO
 
 from django.conf import settings
 from django.contrib import messages
@@ -16,9 +15,21 @@ from .models import RoadAudit
 # 1. AI MODEL CONFIGURATION
 # ==========================================
 
-MODEL_PATH = settings.BASE_DIR / "best.pt"
+def get_yolo_model():
+    """
+    Load the YOLO model only when image detection is required.
+    This prevents the model from loading during Django startup.
+    """
+    from ultralytics import YOLO
 
-model = YOLO(str(MODEL_PATH))
+    model_path = settings.BASE_DIR / "best.pt"
+
+    if not model_path.exists():
+        raise FileNotFoundError(
+            f"AI model file not found: {model_path}"
+        )
+
+    return YOLO(str(model_path))
 
 
 # ==========================================
@@ -48,8 +59,6 @@ def calculate_pothole_cost(
     """
     Calculate an illustrative repair cost using
     bounding-box area as a percentage of image area.
-
-    These values are demonstration estimates only.
     """
 
     box_width = max(0, x2 - x1)
@@ -137,7 +146,6 @@ def home(request):
             request,
             "Please select a road image.",
         )
-
         return redirect("home")
 
     # Validate maximum upload size: 5 MB
@@ -146,7 +154,6 @@ def home(request):
             request,
             "Image size must be 5 MB or less.",
         )
-
         return redirect("home")
 
     # Validate image content
@@ -165,7 +172,6 @@ def home(request):
             request,
             "Invalid image. Please upload a valid image.",
         )
-
         return redirect("home")
 
     # Create an audit record and save uploaded image
@@ -176,6 +182,9 @@ def home(request):
     try:
         # Get uploaded image path
         image_path = Path(audit.road_image.path)
+
+        # Load YOLO model only when detection is required
+        model = get_yolo_model()
 
         # Run YOLOv8 object detection
         results = model.predict(
@@ -345,7 +354,7 @@ def home(request):
         messages.warning(
             request,
             "Image uploaded, but AI detection failed. "
-            "Check the terminal for details.",
+            "Check the application logs for details.",
         )
 
         # Keep dashboard available if detection fails
