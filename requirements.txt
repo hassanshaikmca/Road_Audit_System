@@ -43,3 +43,4 @@ ultralytics==8.4.178
 ultralytics-platform==0.1.90
 ultralytics-thop==2.2.2
 urllib3==2.8.0
+gunicorn
