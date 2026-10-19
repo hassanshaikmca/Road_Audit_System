@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import cv2
@@ -11,6 +12,9 @@ from django.shortcuts import render, redirect
 from .models import RoadAudit
 
 
+logger = logging.getLogger(__name__)
+
+
 # ==========================================
 # 1. AI MODEL CONFIGURATION
 # ==========================================
@@ -20,11 +24,12 @@ def get_yolo_model():
     Load the YOLO model only when image detection is required.
     This prevents the model from loading during Django startup.
     """
+
     from ultralytics import YOLO
 
     model_path = settings.BASE_DIR / "best.pt"
 
-    if not model_path.exists():
+    if not model_path.is_file():
         raise FileNotFoundError(
             f"AI model file not found: {model_path}"
         )
@@ -57,8 +62,10 @@ def calculate_pothole_cost(
     image_height,
 ):
     """
-    Calculate an illustrative repair cost using
-    bounding-box area as a percentage of image area.
+    Calculate an illustrative repair cost based on
+    the bounding-box area as a percentage of image area.
+
+    These costs are demonstration estimates only.
     """
 
     box_width = max(0, x2 - x1)
@@ -76,11 +83,10 @@ def calculate_pothole_cost(
     if box_area_percent < SMALL_AREA_PERCENT:
         return SMALL_POTHOLE_COST
 
-    elif box_area_percent < MEDIUM_AREA_PERCENT:
+    if box_area_percent < MEDIUM_AREA_PERCENT:
         return MEDIUM_POTHOLE_COST
 
-    else:
-        return LARGE_POTHOLE_COST
+    return LARGE_POTHOLE_COST
 
 
 # ==========================================
@@ -123,6 +129,9 @@ def get_dashboard_statistics():
 # ==========================================
 
 def home(request):
+    """
+    Display dashboard and process uploaded road images.
+    """
 
     # Display dashboard on GET request
     if request.method == "GET":
@@ -186,7 +195,7 @@ def home(request):
         # Load YOLO model only when detection is required
         model = get_yolo_model()
 
-        # Run YOLOv8 object detection
+        # Run YOLO object detection
         results = model.predict(
             source=str(image_path),
             conf=0.25,
@@ -204,7 +213,7 @@ def home(request):
         # Prepare detection information
         detections = []
 
-        # Process all detections
+        # Process detections
         for result in results:
             for box in result.boxes:
 
@@ -344,11 +353,11 @@ def home(request):
             context,
         )
 
-    except Exception as error:
-        # Print details for troubleshooting
-        print(
-            "AI Detection Error:",
-            error,
+    except Exception:
+        # Record the complete exception in application logs
+        logger.exception(
+            "AI detection failed for audit ID %s",
+            audit.id,
         )
 
         messages.warning(
@@ -357,7 +366,7 @@ def home(request):
             "Check the application logs for details.",
         )
 
-        # Keep dashboard available if detection fails
+        # Keep the dashboard available if detection fails
         context = get_dashboard_statistics()
 
         context.update({
