@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Road Audit System</title>
+
+    {% load static %}
+
+    <!-- Connect CSS -->
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <h2>AI Road Audit</h2>
+        <span>Road Inspection Dashboard</span>
+    </header>
+
+    <main class="container">
+
+        <!-- Welcome Section -->
+        <section class="welcome">
+
+            <p class="eyebrow">SMART ROAD INSPECTION</p>
+
+            <h1>AI Road Audit Dashboard</h1>
+
+            <p>
+                Upload a road image to detect possible road damage
+                and calculate a preliminary repair cost.
+            </p>
+
+        </section>
+
+
+        <!-- Success and Error Messages -->
+        {% if messages %}
+
+            <section class="messages">
+
+                {% for message in messages %}
+
+                    <p class="{{ message.tags }}">
+                        {{ message }}
+                    </p>
+
+                {% endfor %}
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- Dashboard Summary Cards -->
+        <section class="summary">
+
+            <!-- Total Scans -->
+            <div class="card">
+
+                <p>Total Scans</p>
+
+                <h2>{{ total_scans|default:0 }}</h2>
+
+            </div>
+
+
+            <!-- Total Detected Objects -->
+            <div class="card">
+
+                <p>Detected Objects</p>
+
+                <h2>{{ total_detected_objects|default:0 }}</h2>
+
+            </div>
+
+
+            <!-- Total Estimated Repair Cost -->
+            <div class="card">
+
+                <p>Total Estimated Repair Cost</p>
+
+                <h2>₹{{ total_repair_cost|default:0 }}</h2>
+
+                <small>Preliminary estimate only</small>
+
+            </div>
+
+        </section>
+
+
+        <!-- Image Upload Section -->
+        <section class="upload-section">
+
+            <h2>Upload Road Image</h2>
+
+            <p>
+                Select a road image from your computer.
+                Maximum file size: 5 MB.
+            </p>
+
+            <form
+                id="upload-form"
+                method="POST"
+                enctype="multipart/form-data"
+            >
+
+                {% csrf_token %}
+
+                <label for="road-image">
+                    Choose Road Image
+                </label>
+
+                <input
+                    type="file"
+                    id="road-image"
+                    name="road_image"
+                    accept="image/jpeg,image/png,image/webp"
+                    required
+                >
+
+                <!-- Selected Image Preview -->
+                <div id="preview-container" hidden>
+
+                    <h3>Selected Image Preview</h3>
+
+                    <img
+                        id="image-preview"
+                        alt="Preview of selected road image"
+                        class="result-image"
+                    >
+
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submit-button">
+                    Run AI Detection
+                </button>
+
+                <!-- JavaScript Status Message -->
+                <p id="status-message" aria-live="polite"></p>
+
+            </form>
+
+        </section>
+
+
+        <!-- Original Uploaded Image -->
+        {% if audit %}
+
+            <section class="detection-results">
+
+                <h2>Original Road Image</h2>
+
+                <img
+                    src="{{ audit.road_image.url }}"
+                    alt="Original uploaded road image"
+                    class="result-image"
+                >
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- AI Detection Result Image -->
+        {% if annotated_image_url %}
+
+            <section class="detection-results">
+
+                <h2>AI Detection Results</h2>
+
+                <p>
+                    The boxes show objects detected by the AI model.
+                </p>
+
+                <img
+                    src="{{ annotated_image_url }}"
+                    alt="Road image with AI detection boxes"
+                    class="result-image"
+                >
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- Detection Details -->
+        {% if audit %}
+
+            <section class="detection-results">
+
+                <h2>Detection Details</h2>
+
+                <p>
+                    Detected Objects:
+                    <strong>{{ detection_count|default:0 }}</strong>
+                </p>
+
+                {% if detections %}
+
+                    <div class="table-container">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Object Class</th>
+                                    <th>Confidence</th>
+                                    <th>Bounding Box Coordinates</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for item in detections %}
+
+                                    <tr>
+
+                                        <td>
+                                            {{ item.class_name }}
+                                        </td>
+
+                                        <td>
+                                            {{ item.confidence }}%
+                                        </td>
+
+                                        <td>
+                                            ({{ item.x1 }}, {{ item.y1 }})
+                                            -
+                                            ({{ item.x2 }}, {{ item.y2 }})
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                {% else %}
+
+                    <p>
+                        No objects were detected, or AI detection
+                        could not be completed successfully.
+                    </p>
+
+                {% endif %}
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- Current Scan Repair Cost Estimate -->
+        {% if estimated_cost != None %}
+
+            <section class="detection-results">
+
+                <h2>Repair Cost Estimate</h2>
+
+                <p>
+                    Detected Objects:
+                    <strong>{{ detection_count|default:0 }}</strong>
+                </p>
+
+                <p>
+                    Sample Cost Per Object:
+                    <strong>₹1,000</strong>
+                </p>
+
+                <h3>
+                    Estimated Total: ₹{{ estimated_cost }}
+                </h3>
+
+                <p>
+                    This is a sample estimate for demonstration.
+                    It is not an official repair quotation.
+                    Actual repair costs depend on damage dimensions,
+                    materials, labour, repair methods and local rates.
+                </p>
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- PDF Report Download Section -->
+        {% if audit %}
+
+            <section class="detection-results pdf-report-section">
+
+                <h2>Download Audit Report</h2>
+
+                <p>
+                    Download a PDF report containing audit details,
+                    detected objects, available images and estimated
+                    repair cost.
+                </p>
+
+                <a
+                    href="{% url 'download_audit_report' audit.id %}"
+                    class="download-report-btn"
+                >
+                    Download PDF Report
+                </a>
+
+            </section>
+
+        {% endif %}
+
+
+    </main>
+
+
+    <!-- Footer -->
+    <footer class="footer">
+
+        <p>
+            AI Road Audit System |
+            Preliminary estimates only
+        </p>
+
+    </footer>
+
+
+    <!-- Connect JavaScript -->
+    <script src="{% static 'js/dashboard.js' %}"></script>
+
+</body>
+
+</html>

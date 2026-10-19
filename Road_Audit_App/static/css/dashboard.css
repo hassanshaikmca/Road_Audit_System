@@ -1,0 +1,325 @@
+/* 1. Basic page settings */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: aliceblue;
+    color: black;
+}
+
+/* 2. Navigation bar */
+.navbar {
+    background-color: darkblue;
+    color: white;
+    padding: 20px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.navbar h2 {
+    margin: 0;
+}
+
+.navbar span {
+    color: lightblue;
+    font-size: 14px;
+}
+
+/* 3. Main container */
+.container {
+    width: 90%;
+    max-width: 1100px;
+    margin: 35px auto;
+}
+
+/* 4. Welcome section */
+.welcome {
+    margin-bottom: 28px;
+}
+
+.eyebrow {
+    color: blue;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.welcome h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.welcome p {
+    line-height: 1.6;
+}
+
+/* 5. Summary cards */
+.summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.card {
+    background-color: white;
+    border: 1px solid lightgray;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.card p {
+    color: gray;
+    margin-top: 0;
+}
+
+.card h2 {
+    font-size: 26px;
+    margin-bottom: 0;
+    overflow-wrap: anywhere;
+}
+
+.card small {
+    display: block;
+    margin-top: 8px;
+    color: gray;
+}
+
+/* 6. Upload section */
+.upload-section {
+    background-color: white;
+    border: 1px solid lightgray;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.upload-section h2 {
+    margin-top: 0;
+}
+
+.upload-section p {
+    color: gray;
+}
+
+/* 7. Upload form */
+#upload-form {
+    display: grid;
+    gap: 14px;
+    margin-top: 24px;
+}
+
+#upload-form label {
+    font-weight: bold;
+}
+
+input[type="file"] {
+    width: 100%;
+    padding: 14px;
+    border: 1px dashed gray;
+    border-radius: 8px;
+    background-color: whitesmoke;
+}
+
+/* 8. Upload button */
+button {
+    background-color: blue;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 20px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: darkblue;
+}
+
+button:focus-visible {
+    outline: 2px solid darkblue;
+    outline-offset: 3px;
+}
+
+/* 9. Selected image preview */
+#preview-container img {
+    display: block;
+    max-width: 100%;
+    max-height: 350px;
+    border-radius: 10px;
+}
+
+/* 10. AI detection result sections */
+.detection-results {
+    background-color: white;
+    margin-top: 28px;
+    padding: 24px;
+    border: 1px solid lightgray;
+    border-radius: 12px;
+}
+
+.detection-results h2 {
+    color: darkblue;
+    margin-top: 0;
+}
+
+/* 11. Original image and bounding-box image */
+.result-image {
+    display: block;
+    width: 100%;
+    max-width: 700px;
+    height: auto;
+    margin: 18px auto;
+    border: 1px solid lightgray;
+    border-radius: 10px;
+}
+
+/* 12. Detection results table */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.detection-results table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+.detection-results th,
+.detection-results td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid lightgray;
+}
+
+.detection-results th {
+    background-color: lightblue;
+    color: darkblue;
+}
+
+.detection-results tbody tr:hover {
+    background-color: whitesmoke;
+}
+
+/* 13. Repair cost */
+.detection-results h3 {
+    color: green;
+    overflow-wrap: anywhere;
+}
+
+.detection-results strong {
+    color: darkblue;
+}
+
+/* 14. Success and error messages */
+.messages {
+    background-color: lightgreen;
+    border: 1px solid green;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 20px;
+}
+
+.messages p {
+    color: darkgreen;
+    overflow-wrap: anywhere;
+}
+
+.messages p.error {
+    color: darkred;
+}
+
+.messages p.warning {
+    color: #805500;
+}
+
+/* 15. Upload status message */
+#status-message {
+    overflow-wrap: anywhere;
+}
+
+/* 16. PDF report section */
+.pdf-report-section {
+    margin-top: 28px;
+}
+
+.download-report-btn {
+    display: inline-block;
+    padding: 12px 22px;
+    margin-top: 10px;
+    background-color: #176b45;
+    color: white;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.download-report-btn:hover {
+    background-color: #105235;
+}
+
+.download-report-btn:focus-visible {
+    outline: 2px solid #176b45;
+    outline-offset: 3px;
+}
+
+/* 17. Footer */
+.footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    color: gray;
+    font-size: 14px;
+}
+
+/* 18. Mobile responsive design */
+@media (max-width: 650px) {
+
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .summary {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome h1 {
+        font-size: 26px;
+    }
+
+    .container {
+        width: 92%;
+        margin: 20px auto;
+    }
+
+    .card,
+    .upload-section,
+    .detection-results {
+        padding: 18px;
+    }
+
+    .detection-results th,
+    .detection-results td {
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    .download-report-btn {
+        display: block;
+        width: 100%;
+    }
+}
