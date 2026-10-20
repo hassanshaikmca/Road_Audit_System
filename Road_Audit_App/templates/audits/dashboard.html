@@ -1,369 +1,498 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- Browser tab title -->
+    <title>AI Road Audit System</title>
 
-<title>AI Road Audit System</title>
+    <!-- Load Django static files -->
+    {% load static %}
 
-{% load static %}
-
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-
-
+    <!-- Connect the external CSS file -->
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 </head>
 
 <body>
 
+    <!-- ==========================================
+         1. NAVIGATION BAR
+    =========================================== -->
 
-<!-- Navigation Bar -->
-<header class="navbar">
-    <h2>AI Road Audit</h2>
-    <span>Road Inspection Dashboard</span>
-</header>
+    <header class="navbar">
 
-<main class="container">
+        <!-- Website name -->
+        <h2>AI Road Audit</h2>
 
-    <!-- Welcome Section -->
-    <section class="welcome">
-        <p class="eyebrow">SMART ROAD INSPECTION</p>
+        <!-- Short description -->
+        <span>Road Inspection Dashboard</span>
 
-        <h1>AI Road Audit Dashboard</h1>
-
-        <p>
-            Upload a road image to detect possible road damage
-            and calculate a preliminary repair cost.
-        </p>
-    </section>
+    </header>
 
 
-    <!-- Success and Error Messages -->
-    {% if messages %}
-        <section class="messages">
-            {% for message in messages %}
-                <p class="{{ message.tags }}">
-                    {{ message }}
-                </p>
-            {% endfor %}
+    <!-- ==========================================
+         2. MAIN CONTENT
+    =========================================== -->
+
+    <main class="container">
+
+        <!-- ======================================
+             3. WELCOME SECTION
+        ======================================= -->
+
+        <section class="welcome">
+
+            <!-- Small heading above the main title -->
+            <p class="eyebrow">SMART ROAD INSPECTION</p>
+
+            <!-- Main dashboard heading -->
+            <h1>AI Road Audit Dashboard</h1>
+
+            <!-- Explain the purpose of the application -->
+            <p>
+                Upload a road image to detect possible road damage
+                and calculate a preliminary repair cost.
+            </p>
+
         </section>
-    {% endif %}
 
 
-    <!-- Dashboard Summary Cards -->
-    <section class="summary">
+        <!-- ======================================
+             4. SUCCESS AND ERROR MESSAGES
+        ======================================= -->
 
-        <div class="card">
-            <p>Total Scans</p>
-            <h2>{{ total_scans|default:0 }}</h2>
-        </div>
+        {% if messages %}
 
-        <div class="card">
-            <p>Detected Objects</p>
-            <h2>{{ total_detected_objects|default:0 }}</h2>
-        </div>
+            <section class="messages">
 
-        <div class="card">
-            <p>Total Estimated Repair Cost</p>
-            <h2>₹{{ total_repair_cost|default:0 }}</h2>
-            <small>Preliminary estimate only</small>
-        </div>
+                {% for message in messages %}
 
-    </section>
+                    <!-- Display Django success or error messages -->
+                    <p class="{{ message.tags }}">
+                        {{ message }}
+                    </p>
+
+                {% endfor %}
+
+            </section>
+
+        {% endif %}
 
 
-    <!-- Image Upload Section -->
-    <section class="upload-section">
+        <!-- ======================================
+             5. DASHBOARD SUMMARY CARDS
+        ======================================= -->
 
-        <h2>Upload Road Image</h2>
+        <section class="summary">
 
-        <p>
-            Select a road image from your computer.
-            Maximum file size: 5 MB.
-        </p>
+            <!-- Card 1: Total number of scans -->
+            <div class="card">
 
-        <form
-            id="upload-form"
-            method="POST"
-            enctype="multipart/form-data"
-        >
+                <p>Total Scans</p>
 
-            {% csrf_token %}
-
-            <label for="road-image">
-                Choose Road Image
-            </label>
-
-            <input
-                type="file"
-                id="road-image"
-                name="road_image"
-                accept="image/jpeg,image/png,image/webp"
-                required
-            >
-
-            <!-- Selected Image Preview -->
-            <div id="preview-container" hidden>
-
-                <h3>Selected Image Preview</h3>
-
-                <img
-                    id="image-preview"
-                    alt="Preview of selected road image"
-                    class="result-image"
-                >
+                <h2>{{ total_scans|default:0 }}</h2>
 
             </div>
 
-            <button type="submit" id="submit-button">
-                Run AI Detection
-            </button>
 
-            <p id="status-message" aria-live="polite"></p>
+            <!-- Card 2: Total detected objects -->
+            <div class="card">
 
-        </form>
+                <p>Detected Objects</p>
 
-    </section>
+                <h2>{{ total_detected_objects|default:0 }}</h2>
 
-
-    <!-- Original Uploaded Image -->
-    {% if audit %}
-
-        <section class="detection-results">
-
-            <h2>Original Road Image</h2>
-
-            <img
-                src="{{ audit.road_image.url }}"
-                alt="Original uploaded road image"
-                class="result-image"
-            >
-
-        </section>
-
-    {% endif %}
+            </div>
 
 
-    <!-- AI Detection Result Image -->
-    {% if annotated_image_url %}
+            <!-- Card 3: Total estimated repair cost -->
+            <div class="card">
 
-        <section class="detection-results">
+                <p>Total Estimated Repair Cost</p>
 
-            <h2>AI Detection Results</h2>
+                <h2>
+                    ₹{{ total_repair_cost|default:0 }}
+                </h2>
 
-            <p>
-                The boxes show objects detected by the AI model.
-            </p>
+                <small>Preliminary estimate only</small>
 
-            <img
-                src="{{ annotated_image_url }}"
-                alt="Road image with AI detection boxes"
-                class="result-image"
-            >
+            </div>
 
         </section>
 
-    {% endif %}
 
+        <!-- ======================================
+             6. ROAD IMAGE UPLOAD SECTION
+        ======================================= -->
 
-    <!-- Detection Details -->
-    {% if audit %}
+        <section class="upload-section">
 
-        <section class="detection-results">
-
-            <h2>Detection Details</h2>
+            <h2>Upload Road Image</h2>
 
             <p>
-                Detected Objects:
-                <strong>{{ detection_count|default:0 }}</strong>
+                Select a road image from your computer.
+                Maximum file size: 5 MB.
             </p>
 
-            {% if detections %}
 
-                <div class="table-container">
+            <!--
+                POST sends the image to the Django backend.
 
-                    <table>
+                multipart/form-data allows file uploads.
+            -->
 
-                        <thead>
-                            <tr>
-                                <th>Detection No.</th>
-                                <th>Object Class</th>
-                                <th>Confidence</th>
-                                <th>Bounding Box Width</th>
-                                <th>Bounding Box Height</th>
-                                <th>Bounding Box Area</th>
-                            </tr>
-                        </thead>
+            <form
+                id="upload-form"
+                method="POST"
+                enctype="multipart/form-data"
+            >
 
-                        <tbody>
+                <!-- Protect the form against CSRF attacks -->
+                {% csrf_token %}
 
-                            {% for item in detections %}
 
-                                <tr>
+                <!-- Label for the image input -->
+                <label for="road-image">
+                    Choose Road Image
+                </label>
 
-                                    <td>{{ forloop.counter }}</td>
 
-                                    <td>{{ item.class_name }}</td>
+                <!-- Allow the user to select an image -->
+                <input
+                    type="file"
+                    id="road-image"
+                    name="road_image"
+                    accept="image/jpeg, image/png, image/webp"
+                    required
+                >
 
-                                    <td>{{ item.confidence }}%</td>
 
-                                    <td>{{ item.box_width }} px</td>
+                <!-- ==================================
+                     7. SELECTED IMAGE PREVIEW
+                =================================== -->
 
-                                    <td>{{ item.box_height }} px</td>
+                <!-- Hidden until the user selects an image -->
+                <div id="preview-container" hidden>
 
-                                    <td>
-                                        {% widthratio item.box_width 1 item.box_height %} px²
-                                    </td>
+                    <h3>Selected Image Preview</h3>
 
-                                </tr>
-
-                            {% endfor %}
-
-                        </tbody>
-
-                    </table>
+                    <img
+                        id="image-preview"
+                        class="result-image"
+                        alt="Preview of the selected road image"
+                    >
 
                 </div>
 
-            {% else %}
+
+                <!-- Submit the image for AI detection -->
+                <button type="submit" id="submit-button">
+                    Run AI Detection
+                </button>
+
+
+                <!-- Display upload status and validation messages -->
+                <p id="status-message" aria-live="polite"></p>
+
+            </form>
+
+        </section>
+
+
+        <!-- ======================================
+             8. ORIGINAL UPLOADED IMAGE
+        ======================================= -->
+
+        {% if audit %}
+
+            <section class="detection-results">
+
+                <h2>Original Road Image</h2>
+
+                <!-- Display the original image saved by Django -->
+                <img
+                    src="{{ audit.road_image.url }}"
+                    class="result-image"
+                    alt="Original uploaded road image"
+                >
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- ======================================
+             9. AI DETECTION RESULT IMAGE
+        ======================================= -->
+
+        {% if annotated_image_url %}
+
+            <section class="detection-results">
+
+                <h2>AI Detection Results</h2>
 
                 <p>
-                    No objects were detected, or AI detection
-                    could not be completed successfully.
+                    The boxes show objects detected by the AI model.
                 </p>
 
-            {% endif %}
+                <!-- Display the image containing AI detection boxes -->
+                <img
+                    src="{{ annotated_image_url }}"
+                    class="result-image"
+                    alt="Road image with AI detection boxes"
+                >
 
-        </section>
+            </section>
 
-    {% endif %}
+        {% endif %}
 
 
-    <!-- Individual and Total Repair Cost -->
-    {% if estimated_cost != None %}
+        <!-- ======================================
+             10. DETECTION DETAILS TABLE
+        ======================================= -->
 
-        <section class="detection-results">
+        {% if audit %}
 
-            <h2>Repair Cost Estimate</h2>
+            <section class="detection-results">
 
-            <p>
-                Detected Objects:
-                <strong>{{ detection_count|default:0 }}</strong>
-            </p>
+                <h2>Detection Details</h2>
 
-            {% if detections %}
+                <!-- Display the number of detected objects -->
+                <p>
+                    Detected Objects:
+                    <strong>
+                        {{ detection_count|default:0 }}
+                    </strong>
+                </p>
 
-                <h3>Individual Pothole Repair Costs</h3>
 
-                <div class="table-container">
+                <!-- Check whether detection details are available -->
+                {% if detections %}
 
-                    <table>
+                    <div class="table-container">
 
-                        <thead>
-                            <tr>
-                                <th>Pothole No.</th>
-                                <th>Object Class</th>
-                                <th>Confidence</th>
-                                <th>Bounding Box Size</th>
-                                <th>Estimated Repair Cost</th>
-                            </tr>
-                        </thead>
+                        <table>
 
-                        <tbody>
-
-                            {% for item in detections %}
+                            <!-- Table column headings -->
+                            <thead>
 
                                 <tr>
-
-                                    <td>{{ forloop.counter }}</td>
-
-                                    <td>{{ item.class_name }}</td>
-
-                                    <td>{{ item.confidence }}%</td>
-
-                                    <td>
-                                        {{ item.box_width }} × {{ item.box_height }} px
-                                    </td>
-
-                                    <td>
-                                        ₹{{ item.estimated_cost|default:0 }}
-                                    </td>
-
+                                    <th>Detection No.</th>
+                                    <th>Object Class</th>
+                                    <th>Confidence</th>
+                                    <th>Bounding Box Width</th>
+                                    <th>Bounding Box Height</th>
+                                    <th>Bounding Box Area</th>
                                 </tr>
 
-                            {% endfor %}
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            {% endif %}
-
-            <h3>
-                Estimated Total Repair Cost:
-                ₹{{ estimated_cost|default:0 }}
-            </h3>
-
-            <p>
-                <strong>Important:</strong>
-                This is a demonstration estimate based on the
-                detected bounding box area relative to the uploaded
-                image. Pixel measurements do not directly represent
-                actual pothole dimensions. Real repair costs depend
-                on pothole depth, road conditions, materials, labour
-                and local rates. This is not an official quotation.
-            </p>
-
-        </section>
-
-    {% endif %}
+                            </thead>
 
 
-    <!-- PDF Report Download -->
-    {% if audit %}
+                            <!-- Display each detected object -->
+                            <tbody>
 
-        <section class="detection-results pdf-report-section">
+                                {% for item in detections %}
 
-            <h2>Download Audit Report</h2>
+                                    <tr>
 
-            <p>
-                Download a PDF report containing audit details,
-                detected objects, available images and estimated
-                repair cost.
-            </p>
+                                        <!-- Automatically number the detections -->
+                                        <td>{{ forloop.counter }}</td>
 
-            <a
-                href="{% url 'download_audit_report' audit.id %}"
-                class="download-report-btn"
-            >
-                Download PDF Report
-            </a>
+                                        <!-- Detected object name -->
+                                        <td>{{ item.class_name }}</td>
 
-        </section>
+                                        <!-- AI confidence percentage -->
+                                        <td>{{ item.confidence }}%</td>
 
-    {% endif %}
+                                        <!-- Bounding box width -->
+                                        <td>{{ item.box_width }} px</td>
 
-</main>
+                                        <!-- Bounding box height -->
+                                        <td>{{ item.box_height }} px</td>
+
+                                        <!-- Bounding box area -->
+                                        <td>
+                                            {{ item.box_area }} px²
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                {% else %}
+
+                    <!-- Display this message when no detections exist -->
+                    <p>
+                        No objects were detected, or AI detection
+                        could not be completed successfully.
+                    </p>
+
+                {% endif %}
+
+            </section>
+
+        {% endif %}
 
 
-<!-- Footer -->
-<footer class="footer">
+        <!-- ======================================
+             11. REPAIR COST ESTIMATE
+        ======================================= -->
 
-    <p>
-        AI Road Audit System |
-        Preliminary estimates only
-    </p>
+        {% if estimated_cost != None %}
 
-</footer>
+            <section class="detection-results">
+
+                <h2>Repair Cost Estimate</h2>
+
+                <p>
+                    Detected Objects:
+                    <strong>
+                        {{ detection_count|default:0 }}
+                    </strong>
+                </p>
 
 
-<!-- JavaScript -->
-<script src="{% static 'js/dashboard.js' %}"></script>
+                <!-- Display individual repair costs -->
+                {% if detections %}
 
+                    <h3>Individual Pothole Repair Costs</h3>
+
+                    <div class="table-container">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>Pothole No.</th>
+                                    <th>Object Class</th>
+                                    <th>Confidence</th>
+                                    <th>Bounding Box Size</th>
+                                    <th>Estimated Repair Cost</th>
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                {% for item in detections %}
+
+                                    <tr>
+
+                                        <td>{{ forloop.counter }}</td>
+
+                                        <td>{{ item.class_name }}</td>
+
+                                        <td>{{ item.confidence }}%</td>
+
+                                        <td>
+                                            {{ item.box_width }} ×
+                                            {{ item.box_height }} px
+                                        </td>
+
+                                        <td>
+                                            ₹{{ item.estimated_cost|default:0 }}
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- Display the total estimated repair cost -->
+                <h3>
+                    Estimated Total Repair Cost:
+                    ₹{{ estimated_cost|default:0 }}
+                </h3>
+
+
+                <!-- Explain the limitations of the estimate -->
+                <p>
+                    <strong>Important:</strong>
+                    This is a demonstration estimate based on
+                    the detected bounding box area relative to
+                    the uploaded image. Pixel measurements do not
+                    directly represent actual pothole dimensions.
+                    Real repair costs depend on pothole depth,
+                    road conditions, materials, labour and local
+                    rates. This is not an official quotation.
+                </p>
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- ======================================
+             12. PDF AUDIT REPORT DOWNLOAD
+        ======================================= -->
+
+        {% if audit %}
+
+            <section class="detection-results pdf-report-section">
+
+                <h2>Download Audit Report</h2>
+
+                <p>
+                    Download a PDF report containing audit details,
+                    detected objects, available images and estimated
+                    repair cost.
+                </p>
+
+
+                <!-- Link to the Django PDF report view -->
+                <a
+                    href="{% url 'download_audit_report' audit.id %}"
+                    class="download-report-btn"
+                >
+                    Download PDF Report
+                </a>
+
+            </section>
+
+        {% endif %}
+
+    </main>
+
+
+    <!-- ==========================================
+         13. FOOTER
+    =========================================== -->
+
+    <footer class="footer">
+
+        <p>
+            AI Road Audit System |
+            Preliminary estimates only
+        </p>
+
+    </footer>
+
+
+    <!-- ==========================================
+         14. JAVASCRIPT FILE
+    =========================================== -->
+
+    <!-- Load JavaScript after the HTML elements -->
+    <script src="{% static 'js/dashboard.js' %}"></script>
 
 </body>
 
